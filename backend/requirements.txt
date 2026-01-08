@@ -75,3 +75,6 @@ psycopg2-binary==2.9.11 # PostgreSQL database adapter(postgres driver)
 # Password hashing
 passlib==1.7.4
 bcrypt==4.0.1
+
+# for cloudinary 
+pydantic-settings==2.12.0
