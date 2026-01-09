@@ -25,27 +25,54 @@ const MobileNav = () => {
       icon: LayoutDashboard,
       url: "/dashboard",
     },
-    { id: "team", label: "Team", icon: Users, url: "/team" },
-    { id: "interns", label: "Interns", icon: GraduationCap, url: "/intern" },
-    { id: "training", label: "Training", icon: Tv, url: "/training" },
+    { id: "team", label: "Team", icon: Users, url: "/dashboard/teams" },
+    {
+      id: "interns",
+      label: "Interns",
+      icon: GraduationCap,
+      url: "/dashboard/interns",
+    },
+    { id: "mentors", label: "Mentors", icon: Users, url: "/dashboard/mentors" },
+    {
+      id: "interns",
+      label: "Interns",
+      icon: GraduationCap,
+      url: "/dashboard/interns",
+    },
+    {
+      id: "training",
+      label: "Training",
+      icon: Tv,
+      url: "/dashboard/trainings",
+    },
+
     {
       id: "internships",
       label: "Internships",
       icon: Briefcase,
-      url: "/internships",
+      url: "/dashboard/internships",
     },
-    { id: "jobs", label: "Jobs", icon: Search, url: "/jobs" },
-    { id: "services", label: "Services", icon: LayoutGrid, url: "/services" },
-    { id: "projects", label: "Projects", icon: FolderOpen, url: "/projects" },
+    { id: "jobs", label: "Jobs", icon: Search, url: "/dashboard/jobs" },
+    {
+      id: "services",
+      label: "Services",
+      icon: LayoutGrid,
+      url: "/dashboard/services",
+    },
+    {
+      id: "projects",
+      label: "Projects",
+      icon: FolderOpen,
+      url: "/dashboard/projects",
+    },
   ];
 
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-primary-dark border-b border-white/10 relative z-[100]">
-      {/* Logo Section */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 flex items-center justify-center">
           <img
-            src="/Logo1.png"
+            src="/Logo2.png"
             alt="Logo"
             className="w-full h-auto object-contain"
           />
@@ -68,13 +95,11 @@ const MobileNav = () => {
 
         {isOpen && (
           <>
-            {/* Backdrop */}
             <div
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Dropdown Content */}
             <div className="absolute right-0 mt-3 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
               <div className="flex flex-col gap-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
                 <p className="text-[10px] font-black text-slate-400 uppercase px-4 py-2 tracking-widest">
@@ -107,7 +132,6 @@ const MobileNav = () => {
                 <button
                   className="w-full flex items-center gap-3 px-4 py-3.5 text-red-500 font-bold text-sm hover:bg-red-50 rounded-2xl transition-colors"
                   onClick={() => {
-                    // Add logout logic here
                     setIsOpen(false);
                   }}
                 >

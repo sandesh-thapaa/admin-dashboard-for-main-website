@@ -1,11 +1,14 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://mainweb-backend-topaz.vercel.app/",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: "https://admin-dashboard-for-main-website.onrender.com",
 });
+
+// for the logout
+export const logout = () => {
+  localStorage.removeItem("access_token");
+  window.location.href = "/";
+};
 
 api.interceptors.request.use(
   (config) => {
@@ -15,27 +18,18 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response Interceptor
 api.interceptors.response.use(
-  (response) => {
-    //passing the data if it is successful
-    return response;
-  },
+  (response) => response,
   (error) => {
-    //if error occurs
     if (error.response && error.response.status === 401) {
-      console.warn("Token expired or invalid. Logging out...");
-      localStorage.removeItem("access_token");
-
-      window.location.href = "/";
+      console.warn("Token expired. Logging out...");
+      logout();
     }
-
     return Promise.reject(error);
   }
 );
+
 export default api;

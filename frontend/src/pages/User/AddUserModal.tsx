@@ -1,126 +1,205 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { X, Upload } from "lucide-react";
-import type { User } from "../../types/dashboard";
+import type { User, UserRole, UserFormData } from "../../types/user";
+import { userSchema } from "../../schema/userSchema";
+import { userService } from "../../services/userService";
+import { uploadImageFlow } from "../../utils/cloudinary";
+import { toast } from "sonner";
 
 interface AddUserModalProps {
   type: "interns" | "teams";
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (user: Partial<User>) => void;
+  onSuccess: () => void;
   initialData?: User | null;
 }
+
+interface ApiError {
+  response?: {
+    data?: {
+      detail?: string | Array<{ msg: string }>;
+    };
+  };
+}
+
+type SocialPlatform = "linkedin" | "twitter" | "github";
+const SOCIAL_PLATFORMS: SocialPlatform[] = ["linkedin", "twitter", "github"];
 
 const AddUserModal: React.FC<AddUserModalProps> = ({
   type,
   isOpen,
   onClose,
-  onAdd,
+  onSuccess,
   initialData,
 }) => {
-  const isEmployee = type === "teams";  /// teams means employees
+  const [formData, setFormData] = useState({
+    name: "",
+    position: "",
+    start_date: new Date().toISOString().split("T")[0],
+    end_date: "",
+    contact_email: "",
+    personal_email: "",
+    contact_number: "",
+    is_visible: true,
+    social_media: {
+      linkedin: "",
+      twitter: "",
+      github: "",
+    },
+  });
 
-  // Clean labels for people
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isEmployee = type === "teams";
   const entityName = isEmployee ? "Employee" : "Intern";
   const positionLabel = isEmployee ? "Designation" : "Internship Role";
   const dateLabel = isEmployee ? "Joined Date" : "Start Date";
 
-  const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    position: initialData?.position || "",
-    start_date:
-      initialData?.start_date || new Date().toISOString().split("T")[0],
-    end_date: initialData?.end_date || "",
-    contact_email: initialData?.contact_email || "",
-    personal_email: initialData?.personal_email || "",
-    contact_number: initialData?.contact_number || "",
-    is_visible: initialData?.is_visible ?? true,
-    linkedIn: initialData?.social_media?.linkedIn || "",
-    twitter: initialData?.social_media?.twitter || "",
-    github: initialData?.social_media?.github || "",
-  });
-
-  const [previewImage, setPreviewImage] = useState<string | null>(
-    initialData?.photo_url || null
-  );
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setFormData({
+          name: initialData.name,
+          position: initialData.position,
+          start_date: initialData.start_date,
+          end_date: initialData.end_date || "",
+          contact_email: initialData.contact_email,
+          personal_email: initialData.personal_email || "",
+          contact_number: initialData.contact_number || "",
+          is_visible: initialData.is_visible,
+          social_media: {
+            linkedin: initialData.social_media?.linkedin || "",
+            twitter: initialData.social_media?.twitter || "",
+            github: initialData.social_media?.github || "",
+          },
+        });
+        setPreviewImage(initialData.photo_url);
+      } else {
+        setFormData({
+          name: "",
+          position: "",
+          start_date: new Date().toISOString().split("T")[0],
+          end_date: "",
+          contact_email: "",
+          personal_email: "",
+          contact_number: "",
+          is_visible: true,
+          social_media: { linkedin: "", twitter: "", github: "" },
+        });
+        setPreviewImage(null);
+        setSelectedFile(null);
+      }
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewImage(reader.result as string);
-      reader.readAsDataURL(file);
+      setSelectedFile(file);
+      setPreviewImage(URL.createObjectURL(file));
+
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.photo_url;
+        return newErrors;
+      });
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Full name is required.";
-    if (!formData.position.trim())
-      newErrors.position = `${positionLabel} is required.`;
-    if (!formData.contact_email.trim())
-      newErrors.contact_email = "Work email is required.";
-
-    if (
-      formData.end_date &&
-      new Date(formData.end_date) < new Date(formData.start_date)
-    ) {
-      newErrors.end_date = "End date must be after start date.";
-    }
-
-    const urlRegex = /^https?:\/\/.+/;
-    if (formData.linkedIn && !urlRegex.test(formData.linkedIn))
-      newErrors.linkedIn = "Invalid URL.";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleSocialChange = (platform: SocialPlatform, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      social_media: { ...prev.social_media, [platform]: value },
+    }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    if (!validateForm()) return;
+    try {
+      let finalPhotoUrl = initialData?.photo_url || "";
 
-    const { linkedIn, twitter, github, ...restOfData } = formData;
+      if (selectedFile) {
+        const uploadToast = toast.loading("Uploading image...");
+        try {
+          finalPhotoUrl = await uploadImageFlow(selectedFile);
+          toast.dismiss(uploadToast);
+        } catch {
+          toast.dismiss(uploadToast);
+          toast.error("Cloudinary upload failed.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
 
-    const finalPayload: Partial<User> = {
-      ...restOfData,
-      id: initialData?.id || crypto.randomUUID(),
-      photo_url:
-        previewImage ||
-        initialData?.photo_url ||
-        `https://api.dicebear.com/7.x/avataaars/svg?seed=${
-          formData.name || "default"
-        }`,
-      social_media: {
-        linkedIn: linkedIn || "",
-        twitter: twitter || "",
-        github: github || "",
-      },
-      updated_at: new Date().toISOString(),
-    };
-    onAdd(finalPayload);
-    onClose();
+      const payload: UserFormData = {
+        ...formData,
+        photo_url: finalPhotoUrl,
+        role: (type === "teams" ? "TEAM" : "INTERN") as UserRole,
+        end_date: formData.end_date.trim() === "" ? null : formData.end_date,
+        personal_email:
+          formData.personal_email.trim() === ""
+            ? null
+            : formData.personal_email,
+        contact_number:
+          formData.contact_number.trim() === ""
+            ? null
+            : formData.contact_number,
+      };
+
+      const result = userSchema.safeParse(payload);
+      if (!result.success) {
+        const fieldErrors: Record<string, string> = {};
+        result.error.issues.forEach((issue) => {
+          fieldErrors[issue.path.join(".")] = issue.message;
+        });
+        setErrors(fieldErrors);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (initialData?.id) {
+        await userService.update(initialData.id, payload);
+        toast.success("Updated successfully");
+      } else {
+        await userService.create(payload);
+        toast.success("Created successfully");
+      }
+
+      onSuccess();
+      onClose();
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const detail = err.response?.data?.detail;
+      const msg = Array.isArray(detail) ? detail[0]?.msg : "Operation failed";
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!isOpen) return null;
 
   const getInputClass = (errorKey: string) => `
     w-full px-4 py-3 rounded-2xl border outline-none text-sm font-medium transition-all
     ${
       errors[errorKey]
         ? "border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500"
-        : "border-slate-200 focus:ring-1 focus:ring-accent-green focus:border-accent-green"
+        : "border-slate-200 focus:ring-1 focus:ring-[#3AE39E] focus:border-[#3AE39E]"
     }
   `;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-dark/40 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-2xl font-extrabold text-primary-navy">
+          <h2 className="text-2xl font-extrabold text-[#102359]">
             {initialData ? "Edit" : "Add New"} {entityName}
           </h2>
           <button
@@ -132,15 +211,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         </div>
 
         <form
-          noValidate
           onSubmit={handleSubmit}
-          className="overflow-y-auto p-8 space-y-8 sidebar-scroll"
+          className="overflow-y-auto p-8 space-y-8 no-scrollbar"
         >
-          {/* Avatar Section */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-2">
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="w-32 h-32 rounded-full border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-accent-green overflow-hidden group relative"
+              className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden group relative transition-colors ${
+                errors.photo_url
+                  ? "border-red-500 bg-red-50"
+                  : "border-slate-200 bg-slate-50 hover:border-[#3AE39E]"
+              }`}
             >
               {previewImage ? (
                 <img
@@ -151,10 +232,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               ) : (
                 <Upload className="text-slate-400" />
               )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span className="text-white text-xs font-bold">
-                  Change Photo
-                </span>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold">
+                Change Photo
               </div>
             </div>
             <input
@@ -167,7 +246,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name - Always Full Name for people */}
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 Full Name
@@ -175,20 +253,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               <input
                 className={getInputClass("name")}
                 value={formData.name}
-                onChange={(e) => {
-                  setFormData({ ...formData, name: e.target.value });
-                  if (errors.name) setErrors({ ...errors, name: "" });
-                }}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="e.g. Aman Gupta"
               />
-              {errors.name && (
-                <p className="text-red-500 text-[10px] font-bold mt-1">
-                  {errors.name}
-                </p>
-              )}
             </label>
 
-            {/* Position / Designation */}
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 {positionLabel}
@@ -196,22 +267,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               <input
                 className={getInputClass("position")}
                 value={formData.position}
-                onChange={(e) => {
-                  setFormData({ ...formData, position: e.target.value });
-                  if (errors.position) setErrors({ ...errors, position: "" });
-                }}
-                placeholder={
-                  isEmployee ? "Senior Software Engineer" : "Frontend Intern"
+                onChange={(e) =>
+                  setFormData({ ...formData, position: e.target.value })
                 }
+                placeholder={isEmployee ? "Engineer" : "Intern"}
               />
-              {errors.position && (
-                <p className="text-red-500 text-[10px] font-bold mt-1">
-                  {errors.position}
-                </p>
-              )}
             </label>
 
-            {/* Dates */}
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 {dateLabel}
@@ -228,20 +290,18 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
-                {isEmployee ? "Contract End (Optional)" : "End Date"}
+                End Date (Optional)
               </span>
               <input
                 type="date"
                 className={getInputClass("end_date")}
                 value={formData.end_date}
-                onChange={(e) => {
-                  setFormData({ ...formData, end_date: e.target.value });
-                  if (errors.end_date) setErrors({ ...errors, end_date: "" });
-                }}
+                onChange={(e) =>
+                  setFormData({ ...formData, end_date: e.target.value })
+                }
               />
             </label>
 
-            {/* Emails */}
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 Work Email
@@ -249,18 +309,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               <input
                 className={getInputClass("contact_email")}
                 value={formData.contact_email}
-                onChange={(e) => {
-                  setFormData({ ...formData, contact_email: e.target.value });
-                  if (errors.contact_email)
-                    setErrors({ ...errors, contact_email: "" });
-                }}
-                placeholder="name@leafclutch.com"
+                onChange={(e) =>
+                  setFormData({ ...formData, contact_email: e.target.value })
+                }
               />
-              {errors.contact_email && (
-                <p className="text-red-500 text-[10px] font-bold mt-1">
-                  {errors.contact_email}
-                </p>
-              )}
             </label>
 
             <label className="block">
@@ -273,12 +325,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, personal_email: e.target.value })
                 }
-                placeholder="personal.dev@gmail.com"
+                placeholder="personal@example.com"
               />
             </label>
 
-            {/* Contact & Visibility */}
-            <label className="block">
+            <label className="block md:col-span-2">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 Contact Number
               </span>
@@ -288,83 +339,31 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, contact_number: e.target.value })
                 }
-                placeholder="+91 XXXXX XXXXX"
+                placeholder="+91 ..."
               />
             </label>
-
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 self-end">
-              <span className="text-sm font-bold text-slate-700">
-                Show on Website
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({ ...formData, is_visible: !formData.is_visible })
-                }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  formData.is_visible ? "bg-accent-green" : "bg-slate-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${
-                    formData.is_visible ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
           </div>
 
-          {/* Social Media */}
           <div className="space-y-4 pt-4 border-t border-slate-100">
-            <h3 className="text-sm font-extrabold text-primary-navy">
-              Professional Profiles
+            <h3 className="text-sm font-extrabold text-[#102359]">
+              Social Media Links
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <label className="block">
-                <span className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
-                  LinkedIn
-                </span>
-                <input
-                  className={getInputClass("linkedIn")}
-                  value={formData.linkedIn}
-                  onChange={(e) => {
-                    setFormData({ ...formData, linkedIn: e.target.value });
-                    if (errors.linkedIn) setErrors({ ...errors, linkedIn: "" });
-                  }}
-                  placeholder="https://linkedin.com/in/..."
-                />
-                {errors.linkedIn && (
-                  <p className="text-red-500 text-[10px] mt-1">
-                    {errors.linkedIn}
-                  </p>
-                )}
-              </label>
-              <label className="block">
-                <span className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
-                  Twitter
-                </span>
-                <input
-                  className={getInputClass("twitter")}
-                  value={formData.twitter}
-                  onChange={(e) =>
-                    setFormData({ ...formData, twitter: e.target.value })
-                  }
-                  placeholder="https://twitter.com/..."
-                />
-              </label>
-              <label className="block">
-                <span className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
-                  GitHub
-                </span>
-                <input
-                  className={getInputClass("github")}
-                  value={formData.github}
-                  onChange={(e) =>
-                    setFormData({ ...formData, github: e.target.value })
-                  }
-                  placeholder="https://github.com/..."
-                />
-              </label>
+              {SOCIAL_PLATFORMS.map((platform) => (
+                <div key={platform}>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
+                    {platform}
+                  </span>
+                  <input
+                    className={getInputClass(`social_media.${platform}`)}
+                    value={formData.social_media[platform]}
+                    onChange={(e) =>
+                      handleSocialChange(platform, e.target.value)
+                    }
+                    placeholder={`https://${platform}.com/...`}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -372,15 +371,20 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-4 rounded-2xl border font-bold hover:bg-slate-50 transition-all"
+              className="flex-1 px-6 py-4 rounded-2xl border font-bold hover:bg-slate-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-[2] px-6 py-4 rounded-2xl bg-accent-green text-primary-dark font-extrabold hover:shadow-lg transition-all active:scale-[0.98]"
+              disabled={isSubmitting}
+              className="flex-[2] px-6 py-4 rounded-2xl bg-[#3AE39E] text-[#102359] font-extrabold hover:shadow-lg disabled:opacity-50"
             >
-              {initialData ? `Update ${entityName}` : `Add ${entityName}`}
+              {isSubmitting
+                ? "Processing..."
+                : initialData
+                ? `Update ${entityName}`
+                : `Add ${entityName}`}
             </button>
           </div>
         </form>

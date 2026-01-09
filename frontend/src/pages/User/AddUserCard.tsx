@@ -2,10 +2,12 @@ import React from "react";
 import { Plus } from "lucide-react";
 
 interface AddInternCardProps {
+  type: "interns" | "teams";
   onClick?: () => void;
 }
 
-const AddUserCard: React.FC<AddInternCardProps> = ({ onClick }) => {
+const AddUserCard: React.FC<AddInternCardProps> = ({ type, onClick }) => {
+  const label = type === "teams" ? "Member" : "Intern";
   return (
     <button
       onClick={onClick}
@@ -17,7 +19,7 @@ const AddUserCard: React.FC<AddInternCardProps> = ({ onClick }) => {
 
       <div className="text-center">
         <p className="text-lg font-bold text-slate-700 group-hover:text-[#102359] transition-colors">
-          Add Intern
+          {`Add New ${label}`}
         </p>
         <p className="text-sm font-medium text-slate-400">
           Register a new profile

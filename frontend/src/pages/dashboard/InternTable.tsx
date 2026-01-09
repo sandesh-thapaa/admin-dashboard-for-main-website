@@ -1,11 +1,11 @@
 import React from "react";
-import type { User } from "../../types/dashboard";
+import type { User } from "../../types/user";
 import { ArrowRight, Trash2 } from "lucide-react";
 
 interface InternTableProps {
-  interns: User[]; // Named this 'interns' to match what you pass from Dashboard
+  interns: User[]; 
   onToggleVisibility: (id: string) => void;
-  onDelete: (id: string, name: string) => void; // Added this for the modal
+  onDelete: (id: string, name: string) => void; 
 }
 
 const InternTable: React.FC<InternTableProps> = ({

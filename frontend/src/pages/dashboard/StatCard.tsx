@@ -24,7 +24,6 @@ const StatCard: React.FC<StatData> = ({ label, value, icon, trend }) => {
           </h3>
         </div>
 
-        {/* Main Icon Container */}
         <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-[#102359] group-hover:bg-[#3AE39E] group-hover:text-[#081E67] transition-all duration-300">
           {icon}
         </div>

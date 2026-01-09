@@ -5,25 +5,39 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import type { ApiError } from "../../types/api";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "../../schema/authSchema"; 
+import { z } from "zod";
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur", // Validates when user leaves the field
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setError("");
+    setServerError("");
 
     try {
       const response = await api.post("/auth/login", {
-        email: email,
-        password: password,
+        email: data.email,
+        password: data.password,
       });
+
       const { access_token } = response.data;
       if (access_token) {
         localStorage.setItem("access_token", access_token);
@@ -31,16 +45,16 @@ const LoginForm: React.FC = () => {
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        const serverError = err.response?.data as ApiError;
-        if (serverError && serverError.detail) {
+        const errorData = err.response?.data as ApiError;
+        if (errorData && errorData.detail) {
           const message =
-            typeof serverError.detail === "string"
-              ? serverError.detail
-              : serverError.detail[0]?.msg;
-          setError(message || "Login failed");
+            typeof errorData.detail === "string"
+              ? errorData.detail
+              : errorData.detail[0]?.msg;
+          setServerError(message || "Login failed");
         }
       } else {
-        setError("Network error. Is the server running?");
+        setServerError("Network error. Please check your connection.");
       }
     } finally {
       setIsLoading(false);
@@ -68,11 +82,10 @@ const LoginForm: React.FC = () => {
         </div>
       </div>
 
-      {/* Form Section */}
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-        {error && (
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
+        {(serverError || errors.email || errors.password) && (
           <div className="p-3 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-lg">
-            {error}
+            {serverError || errors.email?.message || errors.password?.message}
           </div>
         )}
 
@@ -86,16 +99,13 @@ const LoginForm: React.FC = () => {
           </label>
           <div className="relative">
             <input
-              className="form-input-transition w-full rounded-lg bg-surface-light border-transparent px-4 pl-11 h-12 text-base text-primary-dark placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none"
+              {...register("email")}
+              className={`form-input-transition w-full rounded-lg bg-surface-light border-transparent px-4 pl-11 h-12 text-base text-primary-dark placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none ${
+                errors.email ? "border-rose-500" : ""
+              }`}
               id="email"
               placeholder="name@leafclutch.com"
               type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (error) setError("");
-              }}
-              required
             />
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
           </div>
@@ -111,16 +121,13 @@ const LoginForm: React.FC = () => {
           </label>
           <div className="relative group">
             <input
-              className="form-input-transition w-full rounded-lg bg-surface-light border-transparent px-4 pl-11 pr-12 h-12 text-base text-primary-dark placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none"
+              {...register("password")}
+              className={`form-input-transition w-full rounded-lg bg-surface-light border-transparent px-4 pl-11 pr-12 h-12 text-base text-primary-dark placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none ${
+                errors.password ? "border-rose-500" : ""
+              }`}
               id="password"
               placeholder="Enter your password"
               type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (error) setError("");
-              }}
-              required
             />
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
             <button

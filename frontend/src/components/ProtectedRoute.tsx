@@ -3,9 +3,7 @@ import Sidebar from "../pages/Sidebar";
 import MobileNav from "../pages/MobileNav";
 
 const ProtectedRoute = () => {
-  // const token = localStorage.getItem("access_token");
-  const token = "hello"; // Temporary bypass 
-
+  const token = localStorage.getItem("access_token");
   if (!token) {
     return <Navigate to="/" replace />;
   }
