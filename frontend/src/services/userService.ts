@@ -1,28 +1,43 @@
-import api from "../../src/api/axios";
-import type { User } from "../types/dashboard";
+import api from "../api/axios";
+import type { User, UserFormData } from "../types/user";
 
 export const userService = {
-  // 1. GET (Read all)
-  // Usage: getEntities("interns") or getEntities("teams")
-  getEntities: async (type: string) => {
-    const response = await api.get<User[]>(`/api/${type}`);
+  // Fetch all users (Members in backend)
+  getAll: async () => {
+    const response = await api.get<User[]>("/admin/members");
     return response.data;
   },
 
-  // 2. DELETE
-  deleteEntity: async (type: string, id: string) => {
-    await api.delete(`/api/${type}/${id}`);
-  },
-
-  // 3. PUT (Update)
-  updateEntity: async (type: string, id: string, data: Partial<User>) => {
-    const response = await api.put<User>(`/api/${type}/${id}`, data);
+  // Get specific groups
+  getTeams: async () => {
+    const response = await api.get<User[]>("/admin/members/teams");
     return response.data;
   },
 
-  // 4. POST (Create)
-  addEntity: async (type: string, data: Partial<User>) => {
-    const response = await api.post<User>(`/api/${type}`, data);
+  getInterns: async () => {
+    const response = await api.get<User[]>("/admin/members/interns");
+    return response.data;
+  },
+
+  // Create new user
+  create: async (data: UserFormData) => {
+    const response = await api.post<User>("/admin/members", data);
+    return response.data;
+  },
+
+  // Update existing user
+  update: async (id: string, data: Partial<UserFormData>) => {
+    const response = await api.patch<User>(`/admin/members/${id}`, data);
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get<User>(`/admin/members/${id}`);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete(`/admin/members/${id}`);
     return response.data;
   },
 };

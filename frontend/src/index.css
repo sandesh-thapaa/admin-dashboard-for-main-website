@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Official Company Palette */
   --color-primary-dark: #10193D;
   --color-primary: #102359;
   --color-accent-green: #3AE39E;
@@ -37,7 +36,6 @@
   background: #3AE39E; 
 }
 
-/* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
