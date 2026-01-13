@@ -16,6 +16,9 @@ router = APIRouter(
     tags=["Uploads"],
 )
 
+
+
+
 def get_storage() -> Storage:
     client = Client()
     client.set_endpoint(APPWRITE_ENDPOINT)
@@ -64,5 +67,9 @@ async def upload_image(
         raise HTTPException(status_code=500, detail=str(e))
     
     return {
-        "image_url":f"appwrite://{APPWRITE_BUCKET_ID}/{result['$id']}"
+        "image_url": (
+        f"{APPWRITE_ENDPOINT}/storage/buckets/"
+        f"{APPWRITE_BUCKET_ID}/files/{result['$id']}/view"
+        f"?project={APPWRITE_PROJECT_ID}"
+    )
     }
