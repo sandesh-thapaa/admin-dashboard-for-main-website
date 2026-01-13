@@ -16,7 +16,13 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 TOKEN_EXPIRE_MINUTES = int(os.getenv("TOKEN_EXPIRE_MINUTES", 120))
 
 # Cloudinary
-CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+# CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+
+# Appwrite config
+APPWRITE_ENDPOINT = os.getenv("APPWRITE_ENDPOINT")
+APPWRITE_PROJECT_ID = os.getenv("APPWRITE_PROJECT_ID")
+APPWRITE_API_KEY = os.getenv("APPWRITE_API_KEY")
+APPWRITE_BUCKET_ID = os.getenv("APPWRITE_BUCKET_ID")
 
 # Safety checks (fail fast)
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
@@ -25,32 +31,13 @@ if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
 if not JWT_SECRET:
     raise RuntimeError("JWT_SECRET not set")
 
-# Cloudinary url parsing to get cloud name, api key, and api secret
-class Settings(BaseSettings):
-    CLOUDINARY_URL: str | None = os.getenv("CLOUDINARY_URL")
 
-    @property
-    def cloudinary_cloud_name(self) -> str:
-        if not self.CLOUDINARY_URL:
-            return ""
-        return urlparse(self.CLOUDINARY_URL).hostname or ""
-    
-    @property
-    def cloudinary_api_key(self) -> str:
-        if not self.CLOUDINARY_URL:
-            return ""
-        return urlparse(self.CLOUDINARY_URL).username or ""
 
-    @property
-    def cloudinary_api_secret(self) -> str:
-        if not self.CLOUDINARY_URL:
-            return ""
-        return urlparse(self.CLOUDINARY_URL).password or ""
-
-settings = Settings()
-
-# Verify Cloudinary settings
-if not settings.CLOUDINARY_URL:
-    print("WARNING: CLOUDINARY_URL not set in environment")
-elif not settings.cloudinary_api_secret:
-    print("WARNING: CLOUDINARY_URL is set but missing API Secret (password component)")
+# Appwrite for image storage
+if not all([
+    APPWRITE_ENDPOINT,
+    APPWRITE_PROJECT_ID,
+    APPWRITE_API_KEY,
+    APPWRITE_BUCKET_ID,
+]):
+    raise RuntimeError("Appwrite env vars not loaded")

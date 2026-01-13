@@ -78,3 +78,7 @@ bcrypt==4.0.1
 
 # for cloudinary 
 pydantic-settings==2.12.0
+
+# appwrite for image storage
+appwrite==14.1.0
+python-multipart==0.0.21

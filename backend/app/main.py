@@ -12,7 +12,7 @@ from app.routes import members
 from app.routes import projects
 from app.routes import project_feedback
 from app.routes import opportunities
-from app.routes.admin import uploads
+from app.routes.admin import appwrite_uploads
 
 
 load_dotenv()
@@ -43,7 +43,7 @@ app.include_router(members.router)
 app.include_router(projects.router)
 app.include_router(project_feedback.router)
 app.include_router(opportunities.router) 
-app.include_router(uploads.router) 
+app.include_router(appwrite_uploads.router) 
 app.include_router(health_router)
 
 
