@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Loader2, Upload, ImageIcon } from "lucide-react";
 import { mentorService } from "../../services/mentorService";
-import { uploadImageFlow } from "../../utils/cloudinary"; 
+import { uploadImageFlow } from "../../utils/upload"; 
 import { toast } from "sonner";
 import type { Mentor } from "../../types/mentor";
 import { AxiosError } from "axios";

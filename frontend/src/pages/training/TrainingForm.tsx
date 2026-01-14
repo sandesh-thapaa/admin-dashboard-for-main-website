@@ -7,7 +7,7 @@ import { mentorService } from "../../services/mentorService";
 import type { DiscountType, TrainingFormData } from "../../types/training";
 import type { Mentor } from "../../types/mentor";
 import { trainingSchema } from "../../../src/schema/trainingSchema";
-import { uploadImageFlow } from "../../utils/cloudinary";
+import { uploadImageFlow } from "../../utils/upload";
 import { toast } from "sonner";
 import { Trash2, Loader2, ImagePlus, Search, Plus } from "lucide-react";
 

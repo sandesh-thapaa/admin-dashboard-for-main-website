@@ -21,7 +21,7 @@ import {
   serviceSchema,
   type ServiceFormData,
 } from "../../schema/serviceSchema";
-import { uploadImageFlow } from "../../utils/cloudinary";
+import { uploadImageFlow } from "../../utils/upload";
 import { toast } from "sonner";
 
 interface ServiceModalProps {

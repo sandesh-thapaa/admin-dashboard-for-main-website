@@ -9,7 +9,7 @@ import {
 } from "../../schema/projectSchema";
 import { projectService } from "../../services/projectService";
 import { serviceService } from "../../services/serviceService";
-import { uploadImageFlow } from "../../utils/cloudinary";
+import { uploadImageFlow } from "../../utils/upload";
 import { toast } from "sonner";
 
 type SyncableFeedback = {

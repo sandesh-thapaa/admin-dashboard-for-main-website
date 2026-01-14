@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Upload } from "lucide-react";
+import { AxiosError } from "axios";
 import type { User, UserRole, UserFormData } from "../../types/user";
 import { userSchema } from "../../schema/userSchema";
 import { userService } from "../../services/userService";
-import { uploadImageFlow } from "../../utils/cloudinary";
+import { uploadImageFlow } from "../../utils/upload";
 import { toast } from "sonner";
 
 interface AddUserModalProps {
@@ -13,13 +14,8 @@ interface AddUserModalProps {
   onSuccess: () => void;
   initialData?: User | null;
 }
-
-interface ApiError {
-  response?: {
-    data?: {
-      detail?: string | Array<{ msg: string }>;
-    };
-  };
+interface BackendError {
+  detail: string | Array<{ msg: string }>;
 }
 
 type SocialPlatform = "linkedin" | "twitter" | "github";
@@ -102,7 +98,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     if (file) {
       setSelectedFile(file);
       setPreviewImage(URL.createObjectURL(file));
-
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.photo_url;
@@ -130,9 +125,18 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         try {
           finalPhotoUrl = await uploadImageFlow(selectedFile);
           toast.dismiss(uploadToast);
-        } catch {
+        } catch (err: unknown) {
           toast.dismiss(uploadToast);
-          toast.error("Cloudinary upload failed.");
+          // ok, strict type cast for the upload error
+          const error = err as AxiosError<BackendError>;
+          const detail = error.response?.data?.detail;
+          const errorMsg = Array.isArray(detail)
+            ? detail[0]?.msg
+            : typeof detail === "string"
+            ? detail
+            : "Photo upload failed. ok.";
+
+          toast.error(errorMsg);
           setIsSubmitting(false);
           return;
         }
@@ -166,18 +170,22 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
       if (initialData?.id) {
         await userService.update(initialData.id, payload);
-        toast.success("Updated successfully");
+        toast.success("Updated successfully. ok.");
       } else {
         await userService.create(payload);
-        toast.success("Created successfully");
+        toast.success("Created successfully. ok.");
       }
 
       onSuccess();
       onClose();
     } catch (error: unknown) {
-      const err = error as ApiError;
+      const err = error as AxiosError<BackendError>;
       const detail = err.response?.data?.detail;
-      const msg = Array.isArray(detail) ? detail[0]?.msg : "Operation failed";
+      const msg = Array.isArray(detail)
+        ? detail[0]?.msg
+        : typeof detail === "string"
+        ? detail
+        : "Operation failed. ok.";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -259,7 +267,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 placeholder="e.g. Aman Gupta"
               />
             </label>
-
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 {positionLabel}
@@ -273,7 +280,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 placeholder={isEmployee ? "Engineer" : "Intern"}
               />
             </label>
-
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 {dateLabel}
@@ -287,7 +293,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 }
               />
             </label>
-
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 End Date (Optional)
@@ -301,7 +306,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 }
               />
             </label>
-
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 Work Email
@@ -314,7 +318,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 }
               />
             </label>
-
             <label className="block">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 Personal Email
@@ -328,7 +331,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 placeholder="personal@example.com"
               />
             </label>
-
             <label className="block md:col-span-2">
               <span className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">
                 Contact Number
