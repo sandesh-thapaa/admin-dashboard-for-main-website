@@ -137,7 +137,7 @@ def list_opportunities(
     location: str | None = None,
     search: str | None = None,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_user),
+    
 ):
     # Step 1: Start with a basic query
     query = db.query(Opportunity)
