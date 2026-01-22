@@ -106,7 +106,7 @@ class OpportunityResponse(BaseModel):
     title: str
     description: Optional[str]
     location: Optional[str]
-    created_at=opportunity_obj.created_at
+    created_at: datetime
 
     type: OpportunityType
 

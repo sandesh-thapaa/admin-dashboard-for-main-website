@@ -67,6 +67,7 @@ def opportunity_response(
         type=opportunity_obj.type,
         job_details=job_details,
         internship_details=internship_details,
+        created_at=opportunity_obj.created_at,
         requirements=[r.text for r in requirements],
     )
 
