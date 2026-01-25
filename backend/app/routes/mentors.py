@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException # Tools to build the API
+from fastapi import APIRouter, Depends, HTTPException, status # Tools to build the API
 from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.db.session import get_db
 from app.auth.deps import get_current_user # To check if the user is logged in
 from app.models.training.mentor import Mentor
+from app.models.training.training_mentor import TrainingMentor
 from app.schemas.mentor import MentorCreate, MentorUpdate, MentorResponse
 
 # Setup the router for all mentor-related links
@@ -104,3 +105,43 @@ def update_mentor(
     db.refresh(mentor)
 
     return mentor
+
+
+#  delete mentor with proper validation
+@router.delete("/{mentor_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_mentor(
+    mentor_id: UUID,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user),
+):
+    """
+    Delete a mentor only if they are not assigned to any training.
+    If assigned, returns error with list of training names.
+    """
+    #  find mentor in db
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    # check if mentor is assigned to any training
+    assigned_trainings = db.query(TrainingMentor).filter(TrainingMentor.mentor_id == mentor_id).all()
+    # if mentor has training
+    if assigned_trainings:
+        # get the training names
+        training_names = []
+        for tm in assigned_trainings:
+            training_names.append(tm.training.title)
+        
+        training_list = ", ".join(training_names)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete mentor. Currently assigned to {len(assigned_trainings)} training(s): {training_list}"
+        )
+    
+    #  if not assigned delete mentor
+    db.delete(mentor)
+    db.commit()
+
+    return
+
+    
