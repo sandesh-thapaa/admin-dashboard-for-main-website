@@ -1,4 +1,3 @@
-// src/components/trainings/TrainingForm.tsx
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,7 +8,7 @@ import type { Mentor } from "../../types/mentor";
 import { trainingSchema } from "../../../src/schema/trainingSchema";
 import { uploadImageFlow } from "../../utils/upload";
 import { toast } from "sonner";
-import { Trash2, Loader2, ImagePlus, Search, Plus } from "lucide-react";
+import { X, Trash2, Loader2, ImagePlus, Search, Plus } from "lucide-react";
 
 type FormErrors = Record<string, string>;
 
@@ -34,7 +33,7 @@ const TrainingForm: React.FC = () => {
     base_price: 0,
     discount_value: 0,
     discount_type: "PERCENTAGE",
-    benefits: [], 
+    benefits: [],
     mentor_ids: [],
   });
 
@@ -51,7 +50,7 @@ const TrainingForm: React.FC = () => {
           const matchedIds = programData.mentors
             .map(
               (mObj) =>
-                mentorsData.find((am: Mentor) => am.name === mObj.name)?.id
+                mentorsData.find((am: Mentor) => am.name === mObj.name)?.id,
             )
             .filter((mid): mid is string => !!mid);
 
@@ -80,9 +79,9 @@ const TrainingForm: React.FC = () => {
   const filteredMentors = useMemo(
     () =>
       allMentors.filter((m) =>
-        m.name.toLowerCase().includes(searchQuery.toLowerCase())
+        m.name.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-    [allMentors, searchQuery]
+    [allMentors, searchQuery],
   );
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +91,14 @@ const TrainingForm: React.FC = () => {
       setPreview(URL.createObjectURL(file));
       setFormData((prev) => ({ ...prev, photo_url: "awaiting_upload" }));
     }
+  };
+
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setPreview("");
+    setFormData((prev) => ({ ...prev, photo_url: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const toggleMentorSelection = (mentorId: string) => {
@@ -110,7 +117,7 @@ const TrainingForm: React.FC = () => {
     e.preventDefault();
     setErrors({});
     const mainToast = toast.loading(
-      isEdit ? "Updating program..." : "Creating program..."
+      isEdit ? "Updating program..." : "Creating program...",
     );
 
     const cleanedFormData = {
@@ -193,18 +200,27 @@ const TrainingForm: React.FC = () => {
                 />
                 <div
                   onClick={() => !submitting && fileInputRef.current?.click()}
-                  className={`aspect-square rounded-[32px] border-4 border-dashed flex items-center justify-center cursor-pointer overflow-hidden transition-all ${
+                  className={`relative aspect-square rounded-[32px] border-4 border-dashed flex items-center justify-center cursor-pointer overflow-hidden transition-all ${
                     preview
                       ? "border-[#3AE39E]"
                       : "bg-white border-slate-200 hover:border-[#3AE39E]/50"
                   } ${errors.photo_url ? "border-red-400" : ""}`}
                 >
                   {preview ? (
-                    <img
-                      src={preview}
-                      className="w-full h-full object-cover"
-                      alt="Preview"
-                    />
+                    <>
+                      <img
+                        src={preview}
+                        className="w-full h-full object-cover"
+                        alt="Preview"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 shadow-lg transition-all group"
+                      >
+                        <X size={20} className="group-hover:scale-110" />
+                      </button>
+                    </>
                   ) : (
                     <ImagePlus size={48} className="text-slate-300" />
                   )}
@@ -352,30 +368,48 @@ const TrainingForm: React.FC = () => {
                       key={m.id}
                       type="button"
                       onClick={() => toggleMentorSelection(m.id)}
-                      className={`group p-4 rounded-[24px] border-2 transition-all flex flex-col items-center text-center ${
+                      className={`group relative p-5 rounded-[28px] border-2 transition-all flex flex-col items-center text-center ${
                         isSelected
-                          ? "border-[#3AE39E] bg-[#3AE39E]/5 ring-4 ring-[#3AE39E]/10"
+                          ? "border-[#3AE39E] bg-[#3AE39E]/5 ring-4 ring-[#3AE39E]/5"
                           : "border-slate-50 bg-slate-50 hover:border-slate-200"
                       }`}
                     >
-                      <div className="relative mb-3">
+                      <div
+                        className={`absolute top-3 right-3 p-1 rounded-lg transition-all duration-200 ${
+                          isSelected
+                            ? "bg-[#3AE39E] text-[#102359] scale-100 opacity-100"
+                            : "bg-slate-200 text-slate-400 scale-75 opacity-0 group-hover:opacity-100"
+                        }`}
+                      >
+                        <Plus
+                          size={14}
+                          className={isSelected ? "rotate-45" : ""}
+                        />
+                      </div>
+
+                      {/* 2. Avatar Section - Reduced margin-bottom */}
+                      <div className="relative shrink-0 mb-3">
                         <img
                           src={
                             m.photo_url ||
                             `https://ui-avatars.com/api/?name=${m.name}`
                           }
-                          className="size-14 rounded-2xl object-cover shadow-sm"
+                          className={`size-16 rounded-[20px] object-cover shadow-sm transition-transform duration-300 ${
+                            isSelected ? "scale-105" : "group-hover:scale-105"
+                          }`}
                           alt={m.name}
                         />
-                        {isSelected && (
-                          <div className="absolute -top-2 -right-2 bg-[#3AE39E] text-[#102359] rounded-full p-1 shadow-md">
-                            <Plus size={12} className="rotate-45" />
-                          </div>
-                        )}
                       </div>
-                      <p className="text-[11px] font-black text-[#102359] uppercase leading-tight truncate w-full">
-                        {m.name}
-                      </p>
+
+                      {/* 3. Text Section - Forced alignment */}
+                      <div className="w-full flex flex-col items-center min-w-0">
+                        <p className="text-[12px] font-black text-[#102359] uppercase leading-tight truncate w-full px-1">
+                          {m.name}
+                        </p>
+                        <p className="text-[10px] font-bold text-[#3AE39E] uppercase mt-1 truncate w-full px-1">
+                          {m.specialization || "Expert"}
+                        </p>
+                      </div>
                     </button>
                   );
                 })}
@@ -420,7 +454,7 @@ const TrainingForm: React.FC = () => {
                         setFormData({
                           ...formData,
                           benefits: formData.benefits.filter(
-                            (_, idx) => idx !== i
+                            (_, idx) => idx !== i,
                           ),
                         })
                       }

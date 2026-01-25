@@ -124,7 +124,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
       const val = techSearch.trim();
       if (val) {
         const existing = availableTechs.find(
-          (t) => t.name.toLowerCase() === val.toLowerCase()
+          (t) => t.name.toLowerCase() === val.toLowerCase(),
         );
         const toAdd = existing ? existing.id : val;
         if (!selectedTechIds.includes(toAdd)) {
@@ -135,6 +135,14 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         setTechSearch("");
       }
     }
+  };
+
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreview(null);
+    setSelectedFile(null);
+    setValue("photo_url", "", { shouldValidate: true });
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,26 +161,26 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     const syncFeedbacks = async (
       projectId: string,
       original: SyncableFeedback[],
-      current: SyncableFeedback[] | undefined
+      current: SyncableFeedback[] | undefined,
     ) => {
       const currentSafe = current || [];
 
       const currentIds = new Set(
-        currentSafe.filter((f) => f.id).map((f) => f.id!)
+        currentSafe.filter((f) => f.id).map((f) => f.id!),
       );
 
       const toDelete = (original || []).filter(
-        (f) => f.id && !currentIds.has(f.id)
+        (f) => f.id && !currentIds.has(f.id),
       );
 
       const toAdd = currentSafe.filter((f) => !f.id);
 
       const deletePromises = toDelete.map((f) =>
-        projectService.deleteFeedback(f.id!)
+        projectService.deleteFeedback(f.id!),
       );
 
       const addPromises = toAdd.map((f) =>
-        projectService.addFeedback(projectId, f)
+        projectService.addFeedback(projectId, f),
       );
 
       await Promise.all([...deletePromises, ...addPromises]);
@@ -185,10 +193,10 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           if (isUuid) return idOrName;
           const newTech = await serviceService.createTech({ name: idOrName });
           return newTech.id;
-        })
+        }),
       );
 
-      let finalPhotoUrl = initialData?.photo_url || "";
+      let finalPhotoUrl = preview || "";
       if (selectedFile) {
         finalPhotoUrl = await uploadImageFlow(selectedFile);
       }
@@ -205,15 +213,15 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         await syncFeedbacks(
           project.id,
           initialData.feedbacks || [],
-          data.feedbacks || []
+          data.feedbacks || [],
         );
       } else {
         project = await projectService.create(payload);
         if (data.feedbacks && data.feedbacks.length > 0) {
           await Promise.all(
             data.feedbacks.map((fb) =>
-              projectService.addFeedback(project.id, fb)
-            )
+              projectService.addFeedback(project.id, fb),
+            ),
           );
         }
       }
@@ -235,7 +243,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   if (!isOpen) return null;
 
   const filteredTechs = availableTechs.filter((t) =>
-    t.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    t.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
   );
 
   return (
@@ -274,6 +282,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       className="absolute inset-0 w-full h-full object-cover"
                       alt="Preview"
                     />
+
+                    {!isUploading && !isSubmitting && (
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 shadow-lg transition-all z-20"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+
                     {(isUploading || isSubmitting) && (
                       <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
                         <Loader2 className="animate-spin text-[#102359]" />
@@ -366,7 +385,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       className="cursor-pointer hover:text-red-400"
                       onClick={() => {
                         const next = selectedTechIds.filter(
-                          (t) => t !== idOrName
+                          (t) => t !== idOrName,
                         );
                         setValue("tech_ids", next, { shouldValidate: true });
                       }}

@@ -76,8 +76,8 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1 custom-scrollbar">
-        <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
+      <nav className="flex-1 overflow-y-auto py-4 px-4 flex flex-col gap-1 custom-scrollbar">
+        <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
           Main Menu
         </p>
 

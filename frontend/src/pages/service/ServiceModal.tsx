@@ -2,14 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
-import {
-  X,
-  Cpu,
-  DollarSign,
-  ImageIcon,
-  Loader2,
-  Plus,
-} from "lucide-react";
+import { X, Cpu, DollarSign, ImageIcon, Loader2, Plus} from "lucide-react";
 import type {
   Service,
   ServiceTech,
@@ -65,7 +58,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
   useEffect(() => {
     const timer = setTimeout(
       () => setDebouncedOfferingSearch(offeringSearch),
-      500
+      500,
     );
     return () => clearTimeout(timer);
   }, [offeringSearch]);
@@ -123,14 +116,14 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
         tech_ids:
           initialData.techs
             ?.map(
-              (name) => availableTechs.find((t) => t.name === name)?.id || ""
+              (name) => availableTechs.find((t) => t.name === name)?.id || "",
             )
             .filter((id) => id !== "") || [],
         offering_ids:
           initialData.offerings
             ?.map(
               (name) =>
-                availableOfferings.find((o) => o.name === name)?.id || ""
+                availableOfferings.find((o) => o.name === name)?.id || "",
             )
             .filter((id) => id !== "") || [],
         base_price: Number(initialData.base_price) || 0,
@@ -153,14 +146,14 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
 
   const handleToggleId = (
     field: "tech_ids" | "offering_ids",
-    value: string
+    value: string,
   ) => {
     const current = getValues(field) || [];
     if (current.includes(value)) {
       setValue(
         field,
         current.filter((i: string) => i !== value),
-        { shouldValidate: true }
+        { shouldValidate: true },
       );
     } else {
       setValue(field, [...current, value], { shouldValidate: true });
@@ -171,7 +164,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
     e: React.KeyboardEvent<HTMLInputElement>,
     field: "tech_ids" | "offering_ids",
     searchValue: string,
-    setSearchValue: React.Dispatch<React.SetStateAction<string>>
+    setSearchValue: React.Dispatch<React.SetStateAction<string>>,
   ) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -188,12 +181,12 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
 
       const resolve = async (
         ids: string[],
-        creator: (p: { name: string }) => Promise<{ id: string }>
+        creator: (p: { name: string }) => Promise<{ id: string }>,
       ) => {
         return Promise.all(
           ids.map(async (id) =>
-            uuidRegex.test(id) ? id : (await creator({ name: id })).id
-          )
+            uuidRegex.test(id) ? id : (await creator({ name: id })).id,
+          ),
         );
       };
 
@@ -224,10 +217,16 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
         const axiosError = error as AxiosError<BackendValidationError>;
         toast.error(
           axiosError.response?.data?.detail?.[0]?.msg ||
-            "Server validation failed"
+            "Server validation failed",
         );
       }
     }
+  };
+
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setValue("photo_url", "", { shouldValidate: true });
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,7 +274,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                 onClick={() =>
                   !isUploading && !isSubmitting && fileInputRef.current?.click()
                 }
-                className={`relative h-44 w-full rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
+                className={`relative h-44 w-full rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
                   currentPhotoUrl
                     ? "border-solid border-[#3AE39E]"
                     : "border-slate-200 bg-slate-50"
@@ -288,14 +287,25 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                   className="hidden"
                   accept="image/*"
                 />
+
                 {isUploading ? (
                   <Loader2 className="animate-spin text-[#3AE39E]" size={32} />
                 ) : currentPhotoUrl ? (
-                  <img
-                    src={currentPhotoUrl}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    alt="Preview"
-                  />
+                  <>
+                    <img
+                      src={currentPhotoUrl}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      alt="Preview"
+                    />
+                    {/* Remove Button - Only shows if there is a preview */}
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 shadow-lg transition-all group z-20"
+                    >
+                      <X size={18} className="group-hover:scale-110" />
+                    </button>
+                  </>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
                     <ImageIcon size={24} className="text-slate-400" />
@@ -355,7 +365,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                             t.name
                               .toLowerCase()
                               .includes(debouncedTechSearch.toLowerCase()) &&
-                            !selectedTechIds.includes(t.id)
+                            !selectedTechIds.includes(t.id),
                         )
                         .map((t) => (
                           <div
@@ -372,7 +382,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                       {!availableTechs.some(
                         (t) =>
                           t.name.toLowerCase() ===
-                          debouncedTechSearch.toLowerCase()
+                          debouncedTechSearch.toLowerCase(),
                       ) && (
                         <div
                           onClick={() => {
@@ -421,7 +431,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                         e,
                         "offering_ids",
                         offeringSearch,
-                        setOfferingSearch
+                        setOfferingSearch,
                       )
                     }
                     placeholder="Search offerings..."
@@ -435,8 +445,8 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                             o.name
                               .toLowerCase()
                               .includes(
-                                debouncedOfferingSearch.toLowerCase()
-                              ) && !selectedOfferingIds.includes(o.id)
+                                debouncedOfferingSearch.toLowerCase(),
+                              ) && !selectedOfferingIds.includes(o.id),
                         )
                         .map((o) => (
                           <div
@@ -453,13 +463,13 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                       {!availableOfferings.some(
                         (o) =>
                           o.name.toLowerCase() ===
-                          debouncedOfferingSearch.toLowerCase()
+                          debouncedOfferingSearch.toLowerCase(),
                       ) && (
                         <div
                           onClick={() => {
                             handleToggleId(
                               "offering_ids",
-                              debouncedOfferingSearch
+                              debouncedOfferingSearch,
                             );
                             setOfferingSearch("");
                           }}
@@ -553,8 +563,8 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
             {isSubmitting
               ? "Saving..."
               : initialData
-              ? "Update Service"
-              : "Launch Service"}
+                ? "Update Service"
+                : "Launch Service"}
           </button>
         </div>
       </div>

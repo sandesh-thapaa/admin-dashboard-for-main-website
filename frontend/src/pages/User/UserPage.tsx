@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import UserCard from "./UserCard";
 import AddUserCard from "./AddUserCard";
 import AddUserModal from "./AddUserModal";
-// import DeleteConfirmModal from "../DeleteConfirmModal";
+import DeleteConfirmModal from "../DeleteConfirmModal";
 import type { User } from "../../types/user";
 import { userService } from "../../services/userService";
 import {
@@ -11,7 +11,7 @@ import {
   Search,
   Filter,
   Plus,
-  // Trash2,
+  Trash2,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -29,9 +29,9 @@ const UserPage: React.FC<EntityPageProps> = ({ type }) => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // const [deleteId, setDeleteId] = useState<string | null>(null);
-  // const [isDeleting, setIsDeleting] = useState(false);
-  // const [userToDelete, setUserToDelete] = useState<string>("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string>("");
 
   const isNewPath = location.pathname.endsWith("/new");
   const isEditPath = location.pathname.includes("/edit/");
@@ -88,33 +88,33 @@ const UserPage: React.FC<EntityPageProps> = ({ type }) => {
   const handleCloseModal = () =>
     navigate(`/dashboard/${type}`, { replace: true });
 
-  // const openDeleteModal = (user: User) => {
-  //   setDeleteId(user.id);
-  //   setUserToDelete(user.name);
-  // };
+  const openDeleteModal = (user: User) => {
+    setDeleteId(user.id);
+    setUserToDelete(user.name);
+  };
 
-  // const handleConfirmDelete = async () => {
-  //   if (!deleteId) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
 
-  //   setIsDeleting(true);
-  //   const originalUsers = [...users];
-  //   setUsers((prev) => prev.filter((u) => u.id !== deleteId));
+    setIsDeleting(true);
+    const originalUsers = [...users];
+    setUsers((prev) => prev.filter((u) => u.id !== deleteId));
 
-  //   try {
-  //     await userService.delete(deleteId);
+    try {
+      await userService.delete(deleteId);
 
-  //     toast.success(`${isTeamMode ? "Member" : "Intern"} removed.`, {
-  //       icon: <Trash2 size={18} className="text-white" />,
-  //       style: { background: "#EF4444", color: "#fff", border: "none" },
-  //     });
-  //     setDeleteId(null);
-  //   } catch {
-  //     setUsers(originalUsers);
-  //     toast.error("Failed to remove user");
-  //   } finally {
-  //     setIsDeleting(false);
-  //   }
-  // };
+      toast.success(`${isTeamMode ? "Member" : "Intern"} removed.`, {
+        icon: <Trash2 size={18} className="text-white" />,
+        style: { background: "#EF4444", color: "#fff", border: "none" },
+      });
+      setDeleteId(null);
+    } catch {
+      setUsers(originalUsers);
+      toast.error("Failed to remove user");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleToggleVisibility = async (id: string, currentStatus: boolean) => {
     // 1. Optimistic Update: Change UI immediately
@@ -214,7 +214,7 @@ const UserPage: React.FC<EntityPageProps> = ({ type }) => {
                 <UserCard
                   key={user.id}
                   user={user}
-                  // onDelete={() => openDeleteModal(user)}
+                  onDelete={() => openDeleteModal(user)}
                   onEdit={() => handleEditClick(user)}
                   onToggleVisibility={() =>
                     handleToggleVisibility(user.id, user.is_visible)
@@ -235,14 +235,14 @@ const UserPage: React.FC<EntityPageProps> = ({ type }) => {
         initialData={editingUser}
         type={type}
       />
-      {/* 
+      
       <DeleteConfirmModal
         isOpen={!!deleteId}
         isDeleting={isDeleting}
         itemName={userToDelete}
         onClose={() => !isDeleting && setDeleteId(null)}
         onConfirm={handleConfirmDelete}
-      /> */}
+      />
     </div>
   );
 };

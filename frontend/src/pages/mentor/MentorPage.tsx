@@ -17,7 +17,7 @@ import {
 import type { Mentor } from "../../types/mentor";
 import MentorCard from "./MentorCard";
 import MentorModal from "./MentorModal";
-import DeleteConfirmModal from "../DeleteConfirmModal"; // Import your custom modal
+import DeleteConfirmModal from "../DeleteConfirmModal"; 
 import { mentorService } from "../../services/mentorService";
 import { toast } from "sonner";
 import axios from "axios";
@@ -97,11 +97,12 @@ const MentorPage: React.FC = () => {
     }
   };
 
-  const filteredMentors = useMemo(() => {
-    return mentors.filter((mentor) =>
-      mentor.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, mentors]);
+ const filteredMentors = useMemo(() => {
+  return mentors.filter((mentor) =>
+    mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    mentor.specialization?.toLowerCase().includes(searchQuery.toLowerCase()) // Add this
+  );
+}, [searchQuery, mentors]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden font-display flex-col bg-[#F8FAFC]">

@@ -1,6 +1,6 @@
 import React from "react";
 import type { Mentor } from "../../types/mentor";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface MentorCardProps {
   mentor: Mentor;
@@ -11,10 +11,10 @@ interface MentorCardProps {
 const MentorCard: React.FC<MentorCardProps> = ({
   mentor,
   onEdit,
-  // onDelete,
+  onDelete,
 }) => {
   const handleImageError = (
-    e: React.SyntheticEvent<HTMLImageElement, Event>
+    e: React.SyntheticEvent<HTMLImageElement, Event>,
   ) => {
     e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${mentor.name}`;
   };
@@ -29,16 +29,15 @@ const MentorCard: React.FC<MentorCardProps> = ({
         >
           <Pencil size={16} />
         </button>
-        {/* <button
+        <button
           onClick={() => onDelete?.(mentor.id)}
           className="p-1.5 rounded-full bg-slate-50 text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors"
           title="Delete"
         >
           <Trash2 size={16} />
-        </button> */}
+        </button>
       </div>
 
-      {/* Avatar with Fallback Logic */}
       <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 overflow-hidden border-2 border-slate-50 group-hover:border-primary/30 transition-colors shrink-0">
         <img
           alt={`Portrait of ${mentor.name}`}
@@ -55,7 +54,12 @@ const MentorCard: React.FC<MentorCardProps> = ({
         <h3 className="text-lg font-bold text-slate-800 mb-1 group-hover:text-sidebar-bg transition-colors break-words line-clamp-2 px-2">
           {mentor.name}
         </h3>
-        <p className="text-sm text-slate-500 mb-2">Mentor</p>
+        <p
+          className="text-sm font-semibold text-[#3AE39E] mb-2 truncate px-2"
+          title={mentor.specialization}
+        >
+          {mentor.specialization || "Mentor"}
+        </p>
       </div>
     </div>
   );

@@ -93,6 +93,14 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     }
   }, [isOpen, initialData]);
 
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreviewImage(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -118,7 +126,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      let finalPhotoUrl = initialData?.photo_url || "";
+      let finalPhotoUrl = previewImage || "";
 
       if (selectedFile) {
         const uploadToast = toast.loading("Uploading image...");
@@ -133,8 +141,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           const errorMsg = Array.isArray(detail)
             ? detail[0]?.msg
             : typeof detail === "string"
-            ? detail
-            : "Photo upload failed. ok.";
+              ? detail
+              : "Photo upload failed. ok.";
 
           toast.error(errorMsg);
           setIsSubmitting(false);
@@ -184,8 +192,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       const msg = Array.isArray(detail)
         ? detail[0]?.msg
         : typeof detail === "string"
-        ? detail
-        : "Operation failed. ok.";
+          ? detail
+          : "Operation failed. ok.";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -223,26 +231,49 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           className="overflow-y-auto p-8 space-y-8 no-scrollbar"
         >
           <div className="flex flex-col items-center gap-2">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden group relative transition-colors ${
-                errors.photo_url
-                  ? "border-red-500 bg-red-50"
-                  : "border-slate-200 bg-slate-50 hover:border-[#3AE39E]"
-              }`}
-            >
-              {previewImage ? (
-                <img
-                  src={previewImage}
-                  className="w-full h-full object-cover"
-                  alt="Profile"
-                />
-              ) : (
-                <Upload className="text-slate-400" />
-              )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold">
-                Change Photo
+            {/* Photo Section */}
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden group relative transition-colors ${
+                  errors.photo_url
+                    ? "border-red-500 bg-red-50"
+                    : "border-slate-200 bg-slate-50 hover:border-[#3AE39E]"
+                }`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {previewImage ? (
+                  <>
+                    <img
+                      src={previewImage}
+                      className="w-full h-full object-cover"
+                      alt="Profile"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px] font-bold">
+                      Change
+                    </div>
+                  </>
+                ) : (
+                  <Upload className="text-slate-400" />
+                )}
               </div>
+
+              {previewImage && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors flex items-center gap-1 mt-1"
+                >
+                  <X size={14} /> Remove Photo
+                </button>
+              )}
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                className="hidden"
+                accept="image/*"
+              />
             </div>
             <input
               type="file"
@@ -385,8 +416,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               {isSubmitting
                 ? "Processing..."
                 : initialData
-                ? `Update ${entityName}`
-                : `Add ${entityName}`}
+                  ? `Update ${entityName}`
+                  : `Add ${entityName}`}
             </button>
           </div>
         </form>

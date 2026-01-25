@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Loader2, Upload, ImageIcon } from "lucide-react";
 import { mentorService } from "../../services/mentorService";
-import { uploadImageFlow } from "../../utils/upload"; 
+import { uploadImageFlow } from "../../utils/upload";
 import { toast } from "sonner";
 import type { Mentor } from "../../types/mentor";
 import { AxiosError } from "axios";
@@ -25,6 +25,7 @@ const MentorModal: React.FC<MentorModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
+  const [specialization, setSpecialization] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,9 +36,11 @@ const MentorModal: React.FC<MentorModalProps> = ({
     if (isOpen) {
       if (initialData) {
         setName(initialData.name);
+        setSpecialization(initialData.specialization || "");
         setPreviewUrl(initialData.photo_url || null);
       } else {
         setName("");
+        setSpecialization("");
         setPreviewUrl(null);
         setSelectedFile(null);
       }
@@ -59,12 +62,19 @@ const MentorModal: React.FC<MentorModalProps> = ({
     onClose();
   };
 
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      let finalPhotoUrl = initialData?.photo_url || "";
+      let finalPhotoUrl = previewUrl || "";
 
       if (selectedFile) {
         const uploadToast = toast.loading("Uploading image...");
@@ -81,6 +91,7 @@ const MentorModal: React.FC<MentorModalProps> = ({
 
       const payload = {
         name: name,
+        specialization: specialization,
         photo_url: finalPhotoUrl,
       };
 
@@ -141,7 +152,18 @@ const MentorModal: React.FC<MentorModalProps> = ({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-
+          <div>
+            <label className="block text-sm font-bold text-[#102359] mb-2">
+              Specialization
+            </label>
+            <input
+              required
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#3AE39E] outline-none transition-all"
+              placeholder="e.g. MERN Stack, Data Science"
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
+            />
+          </div>
           <div>
             <label className="block text-sm font-bold text-[#102359] mb-2">
               Mentor Photo
@@ -164,6 +186,13 @@ const MentorModal: React.FC<MentorModalProps> = ({
                     className="w-full h-full object-cover"
                     alt="Preview"
                   />
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition-colors z-10"
+                  >
+                    <X size={16} />
+                  </button>
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white flex-col">
                     <Upload size={24} />
                     <span className="text-xs font-bold mt-1">Change Photo</span>

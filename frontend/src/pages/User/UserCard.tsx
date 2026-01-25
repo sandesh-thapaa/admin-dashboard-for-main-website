@@ -1,18 +1,18 @@
 import React from "react";
-import { Pencil } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import type { User } from "../../types/user";
 
 interface UserCardProps {
   user: User;
   onToggleVisibility: (id: string) => void;
-  // onDelete: () => void;
+  onDelete: () => void;
   onEdit?: () => void;
 }
 
 const UserCard: React.FC<UserCardProps> = ({
   user,
   onToggleVisibility,
-  // onDelete,
+  onDelete,
   onEdit,
 }) => {
   const isHidden = !user.is_visible;
@@ -27,13 +27,13 @@ const UserCard: React.FC<UserCardProps> = ({
         >
           <Pencil size={16} />
         </button>
-        {/* <button
+        <button
           title="Delete Intern"
-          // onClick={onDelete}
+          onClick={onDelete}
           className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
         >
           <Trash2 size={16} />
-        </button> */}
+        </button>
       </div>
 
       <div className="flex flex-col items-center text-center mt-2 flex-1">
