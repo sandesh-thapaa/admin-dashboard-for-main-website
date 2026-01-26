@@ -47,6 +47,7 @@ def training_response(training:Training)->TrainingResponse:
                 id=str(m.mentor.id),
                 name=m.mentor.name,
                 photo_url=m.mentor.photo_url,
+                specialization=m.mentor.specialization,
             )
             for m in training.training_mentors
         ],
@@ -186,12 +187,13 @@ def update_training(
         raise HTTPException(status_code=404, detail="Training not found")
     
      # Step 1: Update basic fields
-    training.title = data.title
-    training.description = data.description
-    training.photo_url = data.photo_url
-    training.base_price = data.base_price
-    training.discount_type = data.discount_type
-    training.discount_value = data.discount_value
+    # Use model_dump(exclude_unset=True) to only update fields that were sent
+    update_data = data.model_dump(exclude_unset=True)
+    
+    for field, value in update_data.items():
+        # Skip list fields (handled separately below)
+        if field not in ["benefits", "mentor_ids"]:
+            setattr(training, field, value)
 
     # Step 2: Replace the benefits list
     if data.benefits is not None:

@@ -101,7 +101,7 @@ We made conscious choices to keep the first version focused:
 
 *   **No Public APIs**: Currently, there are no endpoints for the public website. Those will be added in the next phase.
 *   **No Bulk Actions**: You cannot delete 10 projects at once. You must delete them one by one for safety.
-*   **No Image Hosting**: The backend expects a `photo_url`. You should upload images to a storage service (like Supabase Storage or S3) and then send the link here.
+*   **No Image Hosting**: The backend expects a `photo_url`. You should upload images to a storage service (like appwrite Storage) and then send the link here.
 
 ---
 

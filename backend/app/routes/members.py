@@ -117,7 +117,7 @@ def update_member(
     # Step 2: Update only the fields that were sent in the request
     for field, value in payload.model_dump(
         exclude_unset=True,
-        exclude_none=True,
+        # exclude_none=True,  <-- REMOVED: We want to allow setting fields to None (e.g. removing photo)
     ).items():
         setattr(member, field, value)
     
@@ -208,4 +208,29 @@ def get_member_admin(
 
 
 
+# delete a member by their id
+@router.delete("/{member_id}")
+def delete_member(
+    member_id: UUID,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_user),
+):
+    # Step 1: Find the member in the database by their ID
+    member = (
+        db.query(Member)
+        .filter(Member.id == member_id)
+        .first()
+    )
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Member not found",
+        )
+
+    # Step 2: Delete the member from the database
+    db.delete(member)
+    db.commit()
+
+    return {"message": "Member deleted successfully"}
 

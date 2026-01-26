@@ -6,6 +6,7 @@ from uuid import UUID
 class MentorBase(BaseModel):
     name: str
     photo_url: Optional[str] = None
+    specialization: Optional[str] = None
 
 
 class MentorCreate(MentorBase):

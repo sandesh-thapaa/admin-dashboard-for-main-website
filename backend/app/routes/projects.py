@@ -201,7 +201,7 @@ def update_project(
     # Step 1: Update simple text fields
     for field, value in payload.model_dump(
         exclude_unset=True,
-        exclude_none=True,
+        # exclude_none=True, <-- REMOVED: Allow nulls (e.g. removing photo)
     ).items():
         if field != "tech_ids":
             setattr(project, field, value)

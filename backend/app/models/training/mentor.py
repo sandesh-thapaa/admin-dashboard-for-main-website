@@ -20,6 +20,9 @@ class Mentor(Base):
     photo_url = Column(String)
     # Profile image
 
+    specialization = Column(String, nullable=True)
+    # E.g. "Python", "Frontend", "Fullstack"
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
         DateTime,
