@@ -9,14 +9,14 @@ interface InternTableProps {
   onDelete: (id: string, name: string) => void;
 }
 
-const MemberTable: React.FC<InternTableProps> = ({
+const InternTable: React.FC<InternTableProps> = ({
   interns,
   onToggleVisibility,
 }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full">
       <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-        <h3 className="text-[#102359] text-lg font-bold">Recent Members</h3>
+        <h3 className="text-[#102359] text-lg font-bold">Recent Interns</h3>
         <Link
           to="/dashboard/interns"
           className="text-blue-600 text-sm font-semibold hover:text-blue-700 flex items-center gap-1 transition-colors"
@@ -29,14 +29,14 @@ const MemberTable: React.FC<InternTableProps> = ({
         {interns.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
             <UserX size={40} className="mb-2 opacity-20" />
-            <p className="text-sm font-medium">No Members found</p>
+            <p className="text-sm font-medium">No Interns found</p>
           </div>
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  Member Name
+                  Intern Name
                 </th>
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Position
@@ -103,4 +103,4 @@ const MemberTable: React.FC<InternTableProps> = ({
   );
 };
 
-export default MemberTable;
+export default InternTable;

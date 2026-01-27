@@ -31,6 +31,7 @@ const TrainingForm: React.FC = () => {
     description: "",
     photo_url: "",
     base_price: 0,
+    enroll_from_price: 0,
     discount_value: 0,
     discount_type: "PERCENTAGE",
     benefits: [],
@@ -59,6 +60,7 @@ const TrainingForm: React.FC = () => {
             description: programData.description || "",
             photo_url: programData.photo_url || "",
             base_price: programData.base_price,
+            enroll_from_price: programData.enroll_from_price || 0,
             discount_value: programData.discount_value ?? 0,
             discount_type:
               (programData.discount_type as DiscountType) ?? "PERCENTAGE",
@@ -281,16 +283,15 @@ const TrainingForm: React.FC = () => {
               <h3 className="font-black text-[#102359] mb-6 uppercase text-sm tracking-wider">
                 Pricing Configuration
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Base Price */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
                     Base Price
                   </label>
                   <input
                     type="number"
-                    className={`w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none focus:border-[#3AE39E] font-bold ${
-                      errors.base_price ? "border-red-400" : "border-slate-100"
-                    }`}
+                    className={`w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none focus:border-[#3AE39E] font-bold ${errors.base_price ? "border-red-400" : "border-slate-100"}`}
                     value={formData.base_price || ""}
                     onChange={(e) =>
                       setFormData({
@@ -299,12 +300,26 @@ const TrainingForm: React.FC = () => {
                       })
                     }
                   />
-                  {errors.base_price && (
-                    <p className="text-red-500 text-[10px] font-bold">
-                      {errors.base_price}
-                    </p>
-                  )}
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
+                    Enroll From Price
+                  </label>
+                  <input
+                    type="number"
+                    className={`w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none focus:border-[#3AE39E] font-bold ${errors.enroll_from_price ? "border-red-400" : "border-[#3AE39E]/20"}`}
+                    value={formData.enroll_from_price || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        enroll_from_price: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Discount Value */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
                     Discount Value
@@ -321,6 +336,7 @@ const TrainingForm: React.FC = () => {
                     }
                   />
                 </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
                     Type
@@ -387,7 +403,6 @@ const TrainingForm: React.FC = () => {
                         />
                       </div>
 
-                      {/* 2. Avatar Section - Reduced margin-bottom */}
                       <div className="relative shrink-0 mb-3">
                         <img
                           src={

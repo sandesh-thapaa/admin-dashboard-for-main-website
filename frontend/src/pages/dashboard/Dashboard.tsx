@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import StatCard from "./StatCard";
-import InternTable from "./MemberTable";
+import InternTable from "./InternTable";
 import DeleteConfirmModal from "../DeleteConfirmModal";
 import type { StatData } from "../../types/dashboard";
 import type { User } from "../../types/user";

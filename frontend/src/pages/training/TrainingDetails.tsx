@@ -104,21 +104,45 @@ const TrainingDetails: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Price
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Pricing Info
                   </p>
-                  <span className="px-2 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-wide">
-                    On Sale
-                  </span>
+                  {/* Only show "On Sale" if there's an actual discount */}
+                  {program.discount_value && program.discount_value > 0 && (
+                    <span className="px-2 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-wide border border-green-100">
+                      Active Discount
+                    </span>
+                  )}
                 </div>
-                <div className="flex items-baseline gap-3 mb-1">
-                  <span className="text-4xl font-extrabold text-[#3AE39E]">
-                    रु{program.effective_price}
-                  </span>
-                  <span className="text-lg text-slate-400 line-through font-medium">
-                    रु{program.base_price}
-                  </span>
+
+                <div className="flex flex-col gap-4">
+                  {/* CEO Request: Enroll From Price */}
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase mb-1">
+                      Enrollment Starts From
+                    </p>
+                    <p className="text-2xl font-black text-[#102359]">
+                      रु{program.enroll_from_price}
+                    </p>
+                  </div>
+
+                  {/* Final Effective vs Base Price */}
+                  <div className="px-1">
+                    <p className="text-[10px] font-black text-[#3AE39E] uppercase mb-1">
+                      Final Price
+                    </p>
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-4xl font-extrabold text-[#3AE39E]">
+                        रु{program.effective_price}
+                      </span>
+                      {program.base_price > program.effective_price && (
+                        <span className="text-lg text-slate-300 line-through font-medium">
+                          रु{program.base_price}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 

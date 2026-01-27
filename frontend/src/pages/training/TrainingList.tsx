@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { trainingService } from "../../services/trainingService";
 import type { TrainingProgram } from "../../types/training";
-import DeleteConfirmModal from "../DeleteConfirmModal"; 
+import DeleteConfirmModal from "../DeleteConfirmModal";
 import { toast } from "sonner";
 import {
   Check,
@@ -21,7 +21,7 @@ interface TrainingListProps {
 const TrainingList: React.FC<TrainingListProps> = ({ searchQuery }) => {
   const [programs, setPrograms] = useState<TrainingProgram[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false); 
+  const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -190,18 +190,28 @@ const TrainingList: React.FC<TrainingListProps> = ({ searchQuery }) => {
                   <div className="px-5 pb-5 mt-auto">
                     <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div className="flex flex-col min-w-0">
-                        <span
-                          className={`text-[11px] text-slate-400 line-through font-medium leading-none mb-1 truncate ${
-                            program.base_price === program.effective_price
-                              ? "invisible"
-                              : ""
-                          }`}
-                        >
-                          Base: रु{program.base_price?.toLocaleString()}
+                        {/* The "Starting From" Label */}
+                        <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">
+                          Starts from
                         </span>
-                        <span className="text-lg font-bold text-[#3AE39E] leading-none truncate">
-                          रु{program.effective_price?.toLocaleString()}
-                        </span>
+                        <div className="flex flex-col">
+                          {/* The Enroll From Price - The CEO's priority */}
+                          <span className="text-sm font-bold text-[#102359] leading-none mb-1.5">
+                            रु{program.enroll_from_price?.toLocaleString()}
+                          </span>
+
+                          {/* The Main Effective Price */}
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-lg font-extrabold text-[#3AE39E] leading-none truncate">
+                              रु{program.effective_price?.toLocaleString()}
+                            </span>
+                            {program.base_price > program.effective_price && (
+                              <span className="text-[10px] text-slate-300 line-through font-bold truncate">
+                                रु{program.base_price?.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-1 flex-shrink-0">

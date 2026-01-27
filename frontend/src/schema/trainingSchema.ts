@@ -5,6 +5,7 @@ export const trainingSchema = z.object({
   description: z.string().optional().or(z.literal("")),
   photo_url: z.string().optional().or(z.literal("")),
   base_price: z.coerce.number().min(0, "Price cannot be negative"),
+  enroll_from_price: z.number().min(0),
   discount_value: z.coerce.number().optional().default(0),
   discount_type: z.enum(["PERCENTAGE", "AMOUNT"]).default("PERCENTAGE"),
   benefits: z.array(z.string()).optional().default([]),
